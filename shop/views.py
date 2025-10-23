@@ -210,13 +210,16 @@ def add_to_cart(request, product_id):
     return redirect('shop:view_cart')
 
 @login_required
-@require_POST
 def remove_from_cart(request, item_id):
     """ลบรายการสินค้าออกจากตะกร้า"""
+    if request.method not in ['POST', 'GET']:
+        messages.error(request, 'คำขอไม่ถูกต้อง')
+        return redirect('shop:view_cart')
+    
     cart = get_object_or_404(Cart, user=request.user)
     cart_item = get_object_or_404(CartItem, pk=item_id, cart=cart)
-    product_name = cart_item.product.name # เก็บชื่อไว้ก่อนลบ
-
+    product_name = cart_item.product.name
+    
     cart_item.delete()
     messages.warning(request, f'ลบ "{product_name}" ออกจากตะกร้าแล้ว')
     return redirect('shop:view_cart')
