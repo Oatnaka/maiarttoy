@@ -17,13 +17,12 @@ SECRET_KEY = 'django-insecure-9dnt%9o1=u)i5!(qfwoj+r&cb5==cxr=m56d5yi(qkx(fq1at(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin', # ทำความสะอาดบรรทัดนี้แล้ว (Jazzmin ต้องอยู่บนสุด)
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -32,7 +31,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'shop',
-    'widget_tweaks',
 ]
 
 MIDDLEWARE = [
@@ -125,53 +123,3 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 LOGIN_URL = '/login/' 
 LOGIN_REDIRECT_URL = '/login/redirect/' 
 
-
-# ----------------------------------------------------------------------
-# 🎨 JAZZMIN CONFIGURATION (สำหรับตกแต่งหน้า Admin)
-# ----------------------------------------------------------------------
-JAZZMIN_SETTINGS = {
-    # TITLE & LOGO
-    "site_title": "Art Toy Shop Admin", 
-    "site_header": "Art Toy Shop",
-    "site_brand": "Admin Console",
-    "welcome_sign": "ยินดีต้อนรับสู่ Art Toy Shop Admin",
-
-    # UI/UX OPTIONS
-    "topbar_fixed": False,
-    "sidebar_fixed": True,
-    "theme": "united",
-
-    # CUSTOM LINKS & MENU
-    "usermenu_links": [
-        {"name": "ดูหน้าหลัก", "url": "shop:index", "new_window": True},
-        {"model": "auth.user"},
-    ],
-    "show_sidebar": True,
-    "navigation_expanded": True,
-    
-    # เมนูหลักใน Sidebar
-    "order_with_respect_to": ["auth", "shop.product", "shop.order", "shop.payment"],
-    "custom_links": {
-        # 💡 ใช้ URL Name ที่ถูกต้อง (shop:...)
-        "shop": [ 
-            {
-                "name": "ดู Admin Dashboard",
-                "url": "shop:admin_dashboard", 
-                "icon": "fas fa-chart-line",
-            },
-            {
-                "name": "จัดการสินค้า (Custom)",
-                "url": "shop:manage_products", 
-                "icon": "fas fa-boxes",
-            },
-            {
-                "name": "จัดการคำสั่งซื้อ (Custom)",
-                "url": "shop:manage_orders", 
-                "icon": "fas fa-receipt",
-            },
-        ]
-    }
-}
-# ----------------------------------------------------------------------
-# END JAZZMIN CONFIGURATION
-# ----------------------------------------------------------------------
