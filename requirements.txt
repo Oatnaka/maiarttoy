@@ -1,0 +1,5 @@
+Django
+gunicorn
+line-bot-sdk
+Pillow
+django-humanize
