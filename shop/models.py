@@ -107,19 +107,45 @@ class Payment(models.Model):
     def __str__(self):
         return f"Payment for Order {self.order.id} ({'Successful' if self.is_successful else 'Failed'})"
 
-    # **[NEW]** Override save method to automatically update Order status when payment is successful
     def save(self, *args, **kwargs):
-        # ตรวจสอบสถานะเดิมก่อน
+        """
+        Override save method เพื่อ:
+        1. อัปเดตสถานะ Order เป็น CONFIRMED เมื่อชำระเงินสำเร็จ
+        2. ตัดสต็อกสินค้าอัตโนมัติ
+        """
+        # เช็กว่าเป็นการอัปเดตหรือสร้างใหม่
         is_new = self.pk is None
+        old_is_successful = False
         
-        # ทำการบันทึก Payment
+        if not is_new:
+            try:
+                old_payment = Payment.objects.get(pk=self.pk)
+                old_is_successful = old_payment.is_successful
+            except Payment.DoesNotExist:
+                pass
+        
+        # บันทึก Payment
         super().save(*args, **kwargs)
 
-        # หากเป็นการชำระเงินสำเร็จ และสถานะเดิมของ Order ไม่ได้ถูกยืนยันแล้ว
-        if self.is_successful and self.order.status == 'PENDING':
-            # อัปเดตสถานะของ Order ให้เป็น 'CONFIRMED'
-            self.order.status = 'CONFIRMED'
-            self.order.save(update_fields=['status', 'updated_at'])
+        # ✅ ถ้าชำระเงินสำเร็จ (เปลี่ยนจาก False → True)
+        if self.is_successful and not old_is_successful:
+            # 1. อัปเดตสถานะ Order
+            if self.order.status == 'PENDING':
+                self.order.status = 'CONFIRMED'
+                self.order.save(update_fields=['status', 'updated_at'])
             
-            # **TODO: สามารถเพิ่ม Logic การลดสต็อกสินค้า (Product Stock) ที่นี่ได้**
-            # (ต้องทำในส่วนของ Logic การสร้าง Order จาก Cart ด้วย เพื่อให้สต็อกถูกลดทันที)
+            # 2. ตัดสต็อกสินค้าทุกรายการใน Order
+            order_items = self.order.items.select_related('product').all()
+            
+            for item in order_items:
+                if item.product:  # ตรวจสอบว่าสินค้ายังมีอยู่
+                    product = item.product
+                    
+                    # ตรวจสอบสต็อกก่อนตัด
+                    if product.stock >= item.quantity:
+                        product.stock -= item.quantity
+                        product.save(update_fields=['stock'])
+                        print(f"✅ ตัดสต็อก: {product.name} จำนวน {item.quantity} (เหลือ {product.stock})")
+                    else:
+                        # กรณีสต็อกไม่พอ (ไม่ควรเกิดถ้า checkout ตรวจสอบดีแล้ว)
+                        print(f"⚠️ WARNING: สต็อกไม่พอสำหรับ {product.name} (มี {product.stock}, ต้องการ {item.quantity})")
