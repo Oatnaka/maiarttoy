@@ -65,10 +65,10 @@
                         </a>
                     </p>
                     
-                    <p class="text-center mt-2 mb-0 small">
-                        {# อาจจะต้องเปลี่ยน 'password_reset' เป็น 'auth_password_reset' หากไม่ได้กำหนดเอง #}
+                    {# ลบส่วน "ลืมรหัสผ่าน?" ออก เพื่อแก้ NoReverseMatch: 'password_reset' not found. #}
+                    {# <p class="text-center mt-2 mb-0 small">
                         <a href="{% url 'password_reset' %}" class="text-muted text-decoration-none">ลืมรหัสผ่าน?</a>
-                    </p>
+                    </p> #}
 
                 </div>
             </div>
