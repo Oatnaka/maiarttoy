@@ -4,3 +4,5 @@ line-bot-sdk
 Pillow
 django-admin-interface
 django-humanize
+whitenoise 
+
