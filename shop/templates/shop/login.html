@@ -5,14 +5,14 @@
 {% block title %}เข้าสู่ระบบ Art Toy Shop{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
+<div class="container">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-6 col-lg-5 col-xl-4">
             
             <div class="card modern-card shadow-lg border-0"> 
                 <div class="card-body p-5">
                     
-                    <h2 class="text-center mb-4 fw-bold text-primary-blue">
+                    <h2 class="text-center mb-4 fw-bold text-header">
                         <i class="fas fa-sign-in-alt me-2"></i> เข้าสู่ระบบ
                     </h2>
                     
@@ -39,22 +39,33 @@
                         
                         {# วนลูปแสดงฟิลด์ฟอร์ม #}
                         {% for field in form %}
-                            <div class="mb-3">
-                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            <div class="mb-4">
+                                <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+                                    {% if field.name == 'username' %}
+                                        <i class="fas fa-user me-2 text-primary-blue"></i>
+                                    {% elif field.name == 'password' %}
+                                        <i class="fas fa-lock me-2 text-primary-blue"></i>
+                                    {% endif %}
+                                    {{ field.label }}
+                                </label>
                                 
                                 {# ✅ แก้ไข: ใช้การแสดงผล field มาตรฐานของ Django ({{ field }}) #}
                                 {# ต้องมั่นใจว่าใน forms.py/views.py ได้เพิ่ม class='form-control' ให้กับ widget แล้ว #}
-                                {{ field }}
+                                <div class="input-group-modern">
+                                    {{ field }}
+                                </div>
 
                                 {% for error in field.errors %}
-                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                    <div class="text-danger small mt-2">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                    </div>
                                 {% endfor %}
                             </div>
                         {% endfor %}
 
                         {# ปุ่มเข้าสู่ระบบ #}
                         <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-lg btn-primary-blue">
+                            <button type="submit" class="btn btn-lg btn-primary-blue btn-modern">
                                 <i class="fas fa-sign-in-alt me-2"></i> เข้าสู่ระบบ
                             </button>
                         </div>
@@ -90,32 +101,122 @@
     }
     
     body { 
-        background-color: var(--bg-light); 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
     }
+    
+    .container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
     .text-primary-blue { 
         color: var(--dark-blue) !important; 
     }
     
     .modern-card {
-        border-radius: 20px;
-        box-shadow: 0 10px 30px var(--shadow-color);
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.95);
+        animation: slideIn 0.5s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
     
     .btn-primary-blue {
-        background-color: var(--primary-blue); 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        border-radius: 8px; 
+        border: none;
+        border-radius: 12px; 
         font-weight: bold;
-        transition: background-color 0.2s;
+        padding: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
+    
     .btn-primary-blue:hover {
-        background-color: #0056b3; 
-        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    .btn-primary-blue:active {
+        transform: translateY(0);
     }
 
     /* CSS สำหรับฟอร์ม */
-    .form-control-lg {
-        height: calc(2.5em + .75rem + 2px);
+    .form-label {
+        color: #2d3748;
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+    }
+    
+    .form-control {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: #f8fafc;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        background-color: white;
+        outline: none;
+    }
+    
+    .input-group-modern {
+        position: relative;
+    }
+    
+    .alert {
+        border-radius: 12px;
+        border: none;
+        padding: 14px 18px;
+        font-weight: 500;
+    }
+    
+    .alert-danger {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+    
+    a.text-primary-blue {
+        color: #667eea !important;
+        transition: color 0.2s ease;
+    }
+    
+    a.text-primary-blue:hover {
+        color: #764ba2 !important;
+    }
+    
+    h2 i {
+        color: #667eea;
+    }
+    
+    .text-header {
+        color: #1a202c !important;
+    }
+    
+    /* Fix for full width on mobile */
+    @media (max-width: 768px) {
+        .col-md-6 {
+            max-width: 90%;
+        }
     }
 </style>
 {% endblock %}
