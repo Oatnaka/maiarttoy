@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load widget_tweaks %}
+{# ไม่มีการใช้ widget_tweaks แล้ว #}
 
 {% block title %}โปรไฟล์ของฉัน{% endblock %}
 
@@ -8,13 +8,15 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8 col-xl-7">
-            {# 💡 ใช้ modern-card #}
+            
             <div class="card modern-card shadow-lg border-0">
                 <div class="card-body p-5">
+                    
                     <h3 class="mb-4 fw-bold text-primary-blue border-bottom pb-2">
                         👤 ข้อมูลโปรไฟล์
                     </h3>
                     
+                    {# แสดงข้อความแจ้งเตือน (Messages) #}
                     {% if messages %}
                         {% for message in messages %}
                             <div class="alert alert-{{ message.tags }} text-center modern-card" role="alert">
@@ -26,27 +28,35 @@
                     <form method="post" novalidate>
                         {% csrf_token %}
                         
-                        {# 💡 ฟิลด์ Username อ่านได้อย่างเดียว #}
+                        {# ฟิลด์ Username (อ่านได้อย่างเดียว) #}
                         <div class="mb-3">
                             <label class="form-label fw-medium">ชื่อผู้ใช้ (Username)</label>
-                            <input type="text" class="form-control form-control-lg rounded-3 bg-light" value="{{ user.username }}" readonly>
+                            <input type="text" 
+                                   class="form-control form-control-lg rounded-3 bg-light" 
+                                   value="{{ user.username }}" 
+                                   readonly>
                         </div>
                         
-                        {# 💡 ฟอร์มที่เราแก้ไขใน forms.py แล้ว (first_name, last_name) #}
+                        {# ฟอร์มสำหรับ First Name #}
                         <div class="mb-3">
                             {{ form.first_name.label_tag }}
                             {{ form.first_name }}
-                            {% for error in form.first_name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            {% for error in form.first_name.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
                         </div>
 
+                        {# ฟอร์มสำหรับ Last Name #}
                         <div class="mb-3">
                             {{ form.last_name.label_tag }}
                             {{ form.last_name }}
-                            {% for error in form.last_name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            {% for error in form.last_name.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
                         </div>
                         
+                        {# ปุ่มบันทึก #}
                         <div class="d-grid gap-2 mt-4">
-                            {# 💡 ใช้ btn-primary-blue #}
                             <button type="submit" class="btn btn-lg btn-primary-blue fw-bold">
                                 <i class="fas fa-save me-1"></i> บันทึกการแก้ไข
                             </button>
@@ -55,6 +65,7 @@
                     
                     <hr class="my-4">
                     
+                    {# ส่วนการตั้งค่าบัญชี (เปลี่ยนรหัสผ่าน) #}
                     <h5 class="fw-semibold text-primary-blue">การตั้งค่าบัญชี</h5>
                     <a href="{% url 'shop:password_change' %}" class="btn btn-outline-secondary rounded-pill">
                         <i class="fas fa-lock me-1"></i> เปลี่ยนรหัสผ่าน
@@ -69,13 +80,11 @@
 {% block head_extra %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-    /* -----------------------------------------------------
-        *** CUSTOM CSS: MODERN ART TOY SHOP THEME ***
-        ----------------------------------------------------- */
+    /* CUSTOM CSS: MODERN ART TOY SHOP THEME */
     :root {
-        --primary-blue: #007bff; 
-        --dark-blue: #1a237e; 
-        --bg-light: #f0f8ff; 
+        --primary-blue: #007bff; /* Primary Blue */
+        --dark-blue: #1a237e; /* Navy Blue */
+        --bg-light: #f0f8ff; /* Alice Blue */
         --shadow-color: rgba(26, 35, 126, 0.15); 
     }
     body { background-color: var(--bg-light); }
@@ -85,13 +94,16 @@
         border-radius: 20px;
         box-shadow: 0 10px 30px var(--shadow-color);
     }
+    
     .btn-primary-blue {
         background-color: var(--primary-blue); 
         color: white;
         border-radius: 8px; 
         font-weight: bold;
     }
-    .btn-primary-blue:hover { background-color: #0056b3; }
+    .btn-primary-blue:hover { 
+        background-color: #0056b3; 
+    }
 
     .form-control-lg.rounded-3 {
         border-radius: 0.5rem !important;
