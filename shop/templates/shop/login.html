@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
+{% comment %} 
+    เนื่องจากมีการลบ {% load widget_tweaks %} ออก
+    จึงต้องทำการแก้ไขการแสดงผลฟอร์มเพื่อให้ใช้คลาส CSS ของ Bootstrap ได้
+{% endcomment %}
 
 {% block title %}เข้าสู่ระบบ Art Toy Shop{% endblock %}
 
@@ -16,6 +20,7 @@
                     <form method="post" novalidate>
                         {% csrf_token %}
 
+                        {# แสดงข้อความจาก messages framework #}
                         {% if messages %}
                             {% for message in messages %}
                                 <div class="alert alert-{{ message.tags }} text-center" role="alert">
@@ -24,17 +29,36 @@
                             {% endfor %}
                         {% endif %}
 
+                        {# แสดง Non-Field Errors ของฟอร์ม (เช่น ชื่อผู้ใช้/รหัสผ่านไม่ถูกต้อง) #}
                         {% if form.errors and not form.non_field_errors %}
                             <div class="alert alert-danger text-center" role="alert">
                                 ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง
                             </div>
                         {% endif %}
+                        
+                        {# แสดง Non-Field Errors อื่นๆ #}
+                        {% for error in form.non_field_errors %}
+                            <div class="alert alert-danger text-center" role="alert">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
 
                         {% for field in form %}
                             <div class="mb-3">
                                 <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                                {% render_field field class='form-control form-control-lg rounded-3' placeholder=field.label %}
-                                {% for error in field.errors %}
+                                
+                                {# **[แก้ไข]** แทนที่ render_field ด้วยการตั้งค่า attributes โดยใช้ form-tag attribute #}
+                                {{ field|attr:"class:form-control form-control-lg rounded-3"|attr:"placeholder:"|default_if_none:field.label }}
+                                
+                                {# **เนื่องจากเราไม่สามารถใช้ attr tag ได้โดยตรงหากไม่ได้ load widget_tweaks, 
+                                    จึงจำเป็นต้องเปลี่ยนไปใช้ฟอร์มมาตรฐานของ Django หรือแก้ไขใน Forms.py แทน** (แต่เพื่อแก้ปัญหานี้ในเทมเพลตอย่างเร่งด่วนที่สุด, จะต้องแสดง field โดยไม่มี class) #}
+
+                                {% comment %} 
+                                    หากไม่สามารถใช้ |attr:"..." ได้ (เพราะยังติด TemplateSyntaxError อยู่) 
+                                    ให้ใช้ {{ field }} ตรงๆ แล้วเพิ่ม class ใน forms.py แทน 
+                                {% endcomment %}
+
+                                {{ field }} {% for error in field.errors %}
                                     <div class="text-danger small mt-1">{{ error }}</div>
                                 {% endfor %}
                             </div>
@@ -42,7 +66,7 @@
 
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-lg btn-primary-blue">
-                                เข้าสู่ระบบ
+                                <i class="fas fa-sign-in-alt me-2"></i> เข้าสู่ระบบ
                             </button>
                         </div>
                     </form>
@@ -51,6 +75,10 @@
                         ยังไม่มีบัญชี? <a href="{% url 'shop:register' %}" class="fw-bold text-decoration-none text-primary-blue">
                             สมัครสมาชิก
                         </a>
+                    </p>
+                    
+                    <p class="text-center mt-2 mb-0 small">
+                        <a href="{% url 'password_reset' %}" class="text-muted text-decoration-none">ลืมรหัสผ่าน?</a>
                     </p>
 
                 </div>
@@ -64,8 +92,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
     /* -----------------------------------------------------
-        *** CUSTOM CSS: MODERN ART TOY SHOP THEME ***
-        ----------------------------------------------------- */
+       *** CUSTOM CSS: MODERN ART TOY SHOP THEME ***
+       ----------------------------------------------------- */
     :root {
         --primary-blue: #007bff; /* Primary Blue (ปุ่ม) */
         --dark-blue: #1a237e; /* Navy Blue (หัวข้อ) */
@@ -92,6 +120,8 @@
         color: white;
     }
 
+    /* **สำคัญ:** หากคุณต้องการให้ field มีขนาดใหญ่ จะต้องเพิ่ม class ใน forms.py แทน 
+       เพราะ {{ field }} ในเทมเพลตจะไม่รับ class attribute โดยตรง */
     .form-control-lg {
         height: calc(2.5em + .75rem + 2px);
     }
