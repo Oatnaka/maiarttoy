@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}คำสั่งซื้อ Art Toy ของฉัน{% endblock %}
+{% block content %}
+<div class="py-4">
+  <h3 class="mb-3 fw-bold text-primary-blue">📦 ประวัติคำสั่งซื้อ Art Toy</h3>
+  {% if orders %}
+    <div class="list-group">
+      {% for o in orders %}
+        <div class="list-group-item d-flex justify-content-between align-items-center shadow-sm mb-2 rounded-3">
+          <div>
+            <strong class="text-primary-blue">#{{ o.id }}</strong>
+            <div class="text-muted small">วันที่: {{ o.created_at|date:"d M Y H:i" }}</div>
+            <div class="small">สถานะ: 
+                {# 💡 [FIX 2] ใช้ {% if %} แท็กที่ถูกต้องแทน inline if/else ของ Python #}
+                {% with status_class=o.status|lower %}
+                <span class="badge rounded-pill 
+                    {% if status_class == 'pending' or status_class == 'confirmed' %}bg-warning text-dark
+                    {% elif status_class == 'shipped' %}bg-info
+                    {% elif status_class == 'delivered' %}bg-success
+                    {% elif status_class == 'cancelled' %}bg-danger
+                    {% else %}bg-secondary
+                    {% endif %}">{{ o.get_status_display }}</span>
+                {% endwith %}
+            </div>
+            <div class="small fw-semibold text-success mt-1">ยอดรวม: ฿{{ o.total_amount|floatformat:2|intcomma }}</div>
+          </div>
+          <div class="text-end">
+            {# URL order_detail เป็นหน้าดูรายละเอียด #}
+            <a href="{% url 'shop:order_detail' o.id %}" class="btn btn-sm btn-outline-primary-blue mt-2">ดูรายละเอียด</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="card p-4 text-center">
+      <p class="mb-0 text-muted">ยังไม่มีคำสั่งซื้อ Art Toy</p>
+      {# ใช้ URL index #}
+      <a href="{% url 'shop:index' %}" class="btn btn-primary-blue mt-3">ไปเลือกซื้อสินค้า</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+    :root {
+        --primary-blue: #0d6efd; 
+        --primary-dark-blue: #0b5ed7;
+    }
+    .text-primary-blue { color: var(--primary-blue) !important; }
+    .btn-primary-blue {
+        background-color: var(--primary-blue);
+        border-color: var(--primary-blue);
+        color: white;
+        border-radius: 8px; 
+    }
+    .btn-primary-blue:hover {
+        background-color: var(--primary-dark-blue);
+        border-color: var(--primary-dark-blue);
+    }
+    .btn-outline-primary-blue {
+        color: var(--primary-blue);
+        border-color: var(--primary-blue);
+        border-radius: 8px; 
+    }
+    .btn-outline-primary-blue:hover {
+        background-color: var(--primary-blue);
+        color: white;
+    }
+</style>
+{% endblock %}

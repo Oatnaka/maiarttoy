@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}เข้าสู่ระบบ Art Toy Shop{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            {# 💡 ใช้ modern-card #}
+            <div class="card modern-card shadow-lg border-0"> 
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4 fw-bold text-primary-blue">
+                        <i class="fas fa-sign-in-alt me-2"></i> เข้าสู่ระบบ
+                    </h2>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} text-center" role="alert">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if form.errors and not form.non_field_errors %}
+                            <div class="alert alert-danger text-center" role="alert">
+                                ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง
+                            </div>
+                        {% endif %}
+
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {% render_field field class='form-control form-control-lg rounded-3' placeholder=field.label %}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-1">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-lg btn-primary-blue">
+                                เข้าสู่ระบบ
+                            </button>
+                        </div>
+                    </form>
+
+                    <p class="text-center mt-4 mb-0 text-muted">
+                        ยังไม่มีบัญชี? <a href="{% url 'shop:register' %}" class="fw-bold text-decoration-none text-primary-blue">
+                            สมัครสมาชิก
+                        </a>
+                    </p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+    /* -----------------------------------------------------
+        *** CUSTOM CSS: MODERN ART TOY SHOP THEME ***
+        ----------------------------------------------------- */
+    :root {
+        --primary-blue: #007bff; /* Primary Blue (ปุ่ม) */
+        --dark-blue: #1a237e; /* Navy Blue (หัวข้อ) */
+        --bg-light: #f0f8ff; /* Alice Blue (พื้นหลัง) */
+        --shadow-color: rgba(26, 35, 126, 0.15); /* สีเงาหลัก */
+        --aqua-blue: #0dcaf0; /* Aqua Blue (ลิงก์/เน้น) */
+    }
+    body { background-color: var(--bg-light); }
+    .text-primary-blue { color: var(--dark-blue) !important; }
+    
+    .modern-card {
+        border-radius: 20px;
+        box-shadow: 0 10px 30px var(--shadow-color);
+    }
+    .btn-primary-blue {
+        background-color: var(--primary-blue); 
+        color: white;
+        border-radius: 8px; 
+        font-weight: bold;
+        transition: background-color 0.2s;
+    }
+    .btn-primary-blue:hover {
+        background-color: #0056b3; 
+        color: white;
+    }
+
+    .form-control-lg {
+        height: calc(2.5em + .75rem + 2px);
+    }
+</style>
+{% endblock %}

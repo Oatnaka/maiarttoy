@@ -1,0 +1,326 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}หน้าหลัก{% endblock %}
+
+{% block head_extra %}
+    <style>
+        /* -----------------------------------------------------
+            *** COLOR PALETTE ***
+            ----------------------------------------------------- */
+        :root {
+            --primary-blue: #007bff;
+            --dark-blue: #003366;
+            --bg-light: #f0f8ff;
+            --shadow-color: rgba(26, 35, 126, 0.1);
+            --border-color: rgba(0, 105, 217, 0.05);
+            --price-red: #dc3545;
+        }
+
+        /* -----------------------------------------------------
+            *** Product Card Style ***
+            ----------------------------------------------------- */
+        .product-card {
+            background-color: #ffffff;
+            border-radius: 15px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 5px 20px var(--shadow-color);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px var(--shadow-color);
+        }
+
+        /* -----------------------------------------------------
+            *** Product Image Square Frame (1:1 Ratio) ***
+            ----------------------------------------------------- */
+        .product-img-frame {
+            width: 100%;
+            padding-top: 100%; /* อัตราส่วน 1:1 (สี่เหลี่ยมจัตุรัส) */
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px 10px 0 0;
+            background: #f8f9fa;
+        }
+        
+        .product-img-frame img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* แสดงรูปเต็มโดยไม่ crop */
+            padding: 15px;
+            transition: transform 0.3s;
+        }
+        
+        .product-card:hover .product-img-frame img {
+            transform: scale(1.05);
+        }
+
+        /* -----------------------------------------------------
+            *** Card Content Layout ***
+            ----------------------------------------------------- */
+        .card-content {
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-weight: 700;
+            color: var(--dark-blue);
+            margin-bottom: 0.5rem;
+            min-height: 2.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* จำกัด 2 บรรทัด */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.25;
+        }
+
+        .card-description {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            min-height: 2.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* จำกัด 2 บรรทัด */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.25;
+        }
+
+        .price-text {
+            color: var(--price-red);
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        /* -----------------------------------------------------
+            *** Button Style ***
+            ----------------------------------------------------- */
+        .btn-primary-blue {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            padding: 0.5rem 1rem;
+        }
+        
+        .btn-primary-blue:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-out-of-stock {
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        /* -----------------------------------------------------
+            *** Page Header ***
+            ----------------------------------------------------- */
+        .page-header {
+            background: linear-gradient(135deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
+            color: white;
+            padding: 2.5rem 0;
+            margin-bottom: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px var(--shadow-color);
+        }
+
+        .page-header h2 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 2rem;
+        }
+
+        .page-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+
+        /* -----------------------------------------------------
+            *** Pagination Style ***
+            ----------------------------------------------------- */
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 3px;
+            color: var(--dark-blue);
+            border: 1px solid var(--border-color);
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+        
+        .pagination .page-link:hover {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            color: white;
+        }
+
+        /* -----------------------------------------------------
+            *** Responsive Adjustments ***
+            ----------------------------------------------------- */
+        @media (max-width: 768px) {
+            .card-title {
+                font-size: 0.95rem;
+                min-height: 2rem;
+            }
+            .price-text {
+                font-size: 1.1rem;
+            }
+            .product-img-frame img {
+                padding: 10px;
+            }
+            .page-header h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+{# Page Header #}
+<div class="page-header text-center mb-4">
+    <h2>
+        <i class="fas fa-cube"></i> Art Toy Collection ทั้งหมด
+    </h2>
+    <p>พบสินค้าทั้งหมด {{ page_obj.paginator.count|intcomma }} รายการ</p>
+</div>
+
+{# Product Grid #}
+{% if page_obj.object_list %}
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
+        {% for product in page_obj.object_list %}
+        <div class="col">
+            <div class="product-card">
+                
+                {# Product Image with Square Frame #}
+                <a href="{% url 'shop:product_detail' product.id %}" class="text-decoration-none">
+                    <div class="product-img-frame">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        {% else %}
+                            <img src="{% static 'images/placeholder.png' %}" alt="No image">
+                        {% endif %}
+                    </div>
+                </a>
+                
+                {# Product Info #}
+                <div class="card-content">
+                    <h5 class="card-title">
+                        <a href="{% url 'shop:product_detail' product.id %}" class="text-decoration-none text-dark">
+                            {{ product.name }}
+                        </a>
+                    </h5>
+                    
+                    <p class="card-description">
+                        {{ product.description|truncatechars:60 }}
+                    </p>
+                    
+                    <div class="mt-auto">
+                        <p class="price-text mb-2">
+                            ฿{{ product.price|floatformat:2|intcomma }}
+                        </p>
+                        
+                        {# Add to Cart Button #}
+                        {% if product.is_in_stock %}
+                            <form method="post" action="{% url 'shop:add_to_cart' product.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-primary-blue w-100">
+                                    <i class="fas fa-cart-plus me-1"></i> เพิ่มลงตะกร้า
+                                </button>
+                            </form>
+                        {% else %}
+                            <button class="btn btn-out-of-stock w-100" disabled>
+                                <i class="fas fa-times-circle me-1"></i> สินค้าหมด
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# Pagination #}
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            
+            {# Previous Button #}
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+                </li>
+            {% endif %}
+
+            {# Page Numbers #}
+            {% for i in page_obj.paginator.page_range %}
+                {% if page_obj.number == i %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ i }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {# Next Button #}
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+                </li>
+            {% endif %}
+            
+        </ul>
+    </nav>
+    {% endif %}
+    
+{% else %}
+    <div class="alert alert-info text-center py-5" role="alert">
+        <i class="fas fa-box-open fa-3x mb-3 text-muted"></i>
+        <h4>ยังไม่มีสินค้าในระบบ</h4>
+        <p class="mb-0">กรุณารอสักครู่...</p>
+    </div>
+{% endif %}
+
+{% endblock %}

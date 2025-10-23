@@ -1,0 +1,438 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}คำสั่งซื้อของฉัน{% endblock %}
+
+{% block head_extra %}
+<style>
+    :root {
+        --primary-blue: #007bff;
+        --dark-blue: #003366;
+        --bg-light: #f0f8ff;
+        --shadow-color: rgba(26, 35, 126, 0.1);
+        --border-color: rgba(0, 105, 217, 0.05);
+        --success-green: #28a745;
+        --warning-yellow: #ffc107;
+        --danger-red: #dc3545;
+        --info-blue: #17a2b8;
+    }
+
+    body {
+        background-color: var(--bg-light);
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
+        color: white;
+        padding: 2.5rem 0;
+        margin-bottom: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px var(--shadow-color);
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 2rem;
+    }
+
+    .order-card {
+        background: white;
+        border-radius: 15px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 5px 20px var(--shadow-color);
+        margin-bottom: 1.5rem;
+        transition: all 0.3s;
+        overflow: hidden;
+    }
+
+    .order-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px var(--shadow-color);
+    }
+
+    .order-header {
+        background: #f8f9fa;
+        padding: 1rem 1.5rem;
+        border-bottom: 2px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .order-number {
+        font-weight: 700;
+        color: var(--dark-blue);
+        font-size: 1.1rem;
+    }
+
+    .order-date {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .order-body {
+        padding: 1.5rem;
+    }
+
+    .order-items-preview {
+        margin-bottom: 1rem;
+    }
+
+    .item-preview {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+    }
+
+    .item-preview:last-child {
+        margin-bottom: 0;
+    }
+
+    .item-img {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        border-radius: 8px;
+        background: white;
+        padding: 5px;
+        margin-right: 1rem;
+    }
+
+    .item-info {
+        flex: 1;
+    }
+
+    .item-name {
+        font-weight: 600;
+        color: var(--dark-blue);
+        margin-bottom: 0.25rem;
+    }
+
+    .item-quantity {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .item-price {
+        font-weight: 700;
+        color: var(--primary-blue);
+        white-space: nowrap;
+    }
+
+    .order-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 2px solid var(--border-color);
+        margin-top: 1rem;
+    }
+
+    .total-amount {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--success-green);
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        display: inline-block;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-confirmed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-shipped {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .status-delivered {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .btn-view-detail {
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .btn-view-detail:hover {
+        background: #0056b3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px var(--shadow-color);
+    }
+
+    .empty-state i {
+        font-size: 5rem;
+        color: #dee2e6;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-state h4 {
+        color: var(--dark-blue);
+        margin-bottom: 1rem;
+    }
+
+    .filter-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 20px var(--shadow-color);
+    }
+
+    .filter-btn {
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .order-count {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.3rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        display: inline-block;
+    }
+
+    @media (max-width: 768px) {
+        .order-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .item-preview {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .item-img {
+            margin-right: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .order-summary {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .page-header h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{# Page Header #}
+<div class="page-header text-center">
+    <h2>
+        <i class="fas fa-clipboard-list me-2"></i>
+        คำสั่งซื้อของฉัน
+    </h2>
+    <div class="order-count">
+        <i class="fas fa-shopping-bag me-1"></i>
+        มีคำสั่งซื้อทั้งหมด {{ orders.count }} รายการ
+    </div>
+</div>
+
+{# Filter Section (Optional - ถ้าต้องการกรองตามสถานะ) #}
+<div class="filter-section">
+    <div class="d-flex align-items-center justify-content-between flex-wrap">
+        <h6 class="mb-0">
+            <i class="fas fa-filter me-2"></i>
+            กรองตามสถานะ:
+        </h6>
+        <div>
+            <a href="?status=all" class="btn btn-sm btn-outline-primary filter-btn">
+                <i class="fas fa-list me-1"></i> ทั้งหมด
+            </a>
+            <a href="?status=PENDING" class="btn btn-sm btn-outline-warning filter-btn">
+                <i class="fas fa-clock me-1"></i> รอชำระเงิน
+            </a>
+            <a href="?status=CONFIRMED" class="btn btn-sm btn-outline-info filter-btn">
+                <i class="fas fa-check me-1"></i> ยืนยันแล้ว
+            </a>
+            <a href="?status=SHIPPED" class="btn btn-sm btn-outline-primary filter-btn">
+                <i class="fas fa-shipping-fast me-1"></i> จัดส่งแล้ว
+            </a>
+            <a href="?status=DELIVERED" class="btn btn-sm btn-outline-success filter-btn">
+                <i class="fas fa-check-circle me-1"></i> ส่งสำเร็จ
+            </a>
+        </div>
+    </div>
+</div>
+
+{# Orders List #}
+{% if orders %}
+    {% for order in orders %}
+    <div class="order-card">
+        
+        {# Order Header #}
+        <div class="order-header">
+            <div>
+                <div class="order-number">
+                    <i class="fas fa-receipt me-2"></i>
+                    คำสั่งซื้อ #{{ order.id }}
+                </div>
+                <div class="order-date">
+                    <i class="far fa-calendar-alt me-1"></i>
+                    {{ order.created_at|date:"d M Y H:i" }}
+                </div>
+            </div>
+            <div>
+                {% if order.status == 'PENDING' %}
+                    <span class="status-badge status-pending">
+                        <i class="fas fa-clock me-1"></i> รอชำระเงิน
+                    </span>
+                {% elif order.status == 'CONFIRMED' %}
+                    <span class="status-badge status-confirmed">
+                        <i class="fas fa-check me-1"></i> ยืนยันแล้ว
+                    </span>
+                {% elif order.status == 'SHIPPED' %}
+                    <span class="status-badge status-shipped">
+                        <i class="fas fa-shipping-fast me-1"></i> จัดส่งแล้ว
+                    </span>
+                {% elif order.status == 'DELIVERED' %}
+                    <span class="status-badge status-delivered">
+                        <i class="fas fa-check-circle me-1"></i> ส่งสำเร็จ
+                    </span>
+                {% elif order.status == 'CANCELLED' %}
+                    <span class="status-badge status-cancelled">
+                        <i class="fas fa-times-circle me-1"></i> ยกเลิกแล้ว
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Order Body #}
+        <div class="order-body">
+            
+            {# Order Items Preview (แสดง 3 รายการแรก) #}
+            <div class="order-items-preview">
+                {% for item in order.items.all|slice:":3" %}
+                <div class="item-preview">
+                    {% if item.product.image %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="item-img">
+                    {% else %}
+                        <div class="item-img d-flex align-items-center justify-content-center">
+                            <i class="fas fa-image text-muted"></i>
+                        </div>
+                    {% endif %}
+                    <div class="item-info">
+                        <div class="item-name">{{ item.product.name }}</div>
+                        <div class="item-quantity">
+                            <i class="fas fa-box me-1"></i>
+                            จำนวน {{ item.quantity }} ชิ้น × ฿{{ item.price|floatformat:2|intcomma }}
+                        </div>
+                    </div>
+                    <div class="item-price">
+                        ฿{{ item.subtotal|floatformat:2|intcomma }}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {# แสดงจำนวนสินค้าที่เหลือ ถ้ามีมากกว่า 3 #}
+                {% if order.items.count > 3 %}
+                <div class="text-center text-muted small mt-2">
+                    <i class="fas fa-ellipsis-h me-1"></i>
+                    และอีก {{ order.items.count|add:"-3" }} รายการ
+                </div>
+                {% endif %}
+            </div>
+
+            {# Order Summary #}
+            <div class="order-summary">
+                <div>
+                    <strong class="text-muted">ยอดรวมทั้งหมด:</strong>
+                    <div class="total-amount">
+                        ฿{{ order.total_amount|floatformat:2|intcomma }}
+                    </div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% url 'shop:order_detail' order.id %}" class="btn btn-view-detail">
+                        <i class="fas fa-eye me-2"></i>
+                        ดูรายละเอียด
+                    </a>
+                    {% if order.status == 'PENDING' %}
+                        <a href="{% url 'shop:payment_process' order.id %}" class="btn btn-success">
+                            <i class="fas fa-credit-card me-2"></i>
+                            ชำระเงิน
+                        </a>
+                    {% endif %}
+                    {% if order.status == 'SHIPPED' and order.tracking_number %}
+                        <button class="btn btn-outline-info" data-bs-toggle="tooltip" title="หมายเลขพัสดุ: {{ order.tracking_number }}">
+                            <i class="fas fa-truck me-2"></i>
+                            ติดตามพัสดุ
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+    {% endfor %}
+
+{% else %}
+    {# Empty State #}
+    <div class="empty-state">
+        <i class="fas fa-shopping-cart"></i>
+        <h4>คุณยังไม่มีคำสั่งซื้อ</h4>
+        <p class="text-muted mb-4">เริ่มต้นช้อปปิ้ง Art Toy สุดพิเศษกับเราได้เลย!</p>
+        <a href="{% url 'shop:index' %}" class="btn btn-primary-blue">
+            <i class="fas fa-shopping-bag me-2"></i>
+            เริ่มช้อปปิ้ง
+        </a>
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
+{% endblock %}

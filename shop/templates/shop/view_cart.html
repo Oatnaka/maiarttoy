@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %} 
+
+{% block title %}ตะกร้าสินค้า Art Toy ของฉัน{% endblock %}
+
+{% block content %}<div class="container py-5">
+<div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-8">
+        <h3 class="fw-bold mb-5 text-primary-blue border-bottom pb-3">🛒 ตะกร้าสินค้า Art Toy</h3>
+
+        {# ✅ [FIX] ใช้ cart.cartitem_set.all แทน cart.items.all ตาม models.py #}
+        {% if cart.cartitem_set.all %} 
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} text-center modern-card-alert" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="card modern-card p-4 mb-4 border-0 shadow-lg"> 
+                <div class="table-responsive">
+                    <table class="table align-middle table-borderless cart-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-primary-blue rounded-start-3" style="width: 40%;">สินค้า</th>
+                                <th class="text-primary-blue" style="width: 15%;">ราคา</th>
+                                <th class="text-primary-blue" style="width: 25%;">จำนวน</th>
+                                <th class="text-primary-blue" style="width: 15%;">รวม</th>
+                                <th class="rounded-end-3" style="width: 5%;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {# ✅ [FIX] วนลูปด้วย cart.cartitem_set.all #}
+                            {% for item in cart.cartitem_set.all %}
+                            <tr id="cart-item-{{ item.product.id }}">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if item.product.image %}
+                                            <img src="{{ item.product.image.url }}" class="cart-product-img me-3" alt="{{ item.product.name }}">
+                                        {% else %}
+                                            <div class="cart-product-img me-3 d-flex align-items-center justify-content-center border text-muted">No Image</div>
+                                        {% endif %}
+                                        <div>
+                                            {# URL ไปหน้ารายละเอียดสินค้า #}
+                                            <a href="{% url 'shop:product_detail' item.product.id %}" class="fw-semibold text-primary-blue text-decoration-none">
+                                                {{ item.product.name }}
+                                            </a>
+                                            <div class="small text-muted">{{ item.product.stock }} ชิ้นในสต็อก</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-muted small">฿</span>
+                                    {{ item.product.price|floatformat:2|intcomma }}
+                                </td>
+                                <td>
+                                    {# ฟอร์มอัปเดตจำนวนสินค้า #}
+                                    <form id="update-form-{{ item.product.id }}" method="post" action="{% url 'shop:update_cart_quantity' item.product.id %}" class="d-flex align-items-center">
+                                        {% csrf_token %}
+                                        <div class="input-group input-group-sm quantity-control">
+                                            <input type="number" 
+                                                   name="quantity" 
+                                                   id="quantity-{{ item.product.id }}"
+                                                   value="{{ item.quantity }}" 
+                                                   min="1" 
+                                                   max="{{ item.product.stock }}"
+                                                   class="form-control text-center quantity-input" 
+                                                   data-product-id="{{ item.product.id }}"
+                                                   required>
+                                            <button type="submit" class="btn btn-outline-primary-blue" title="อัปเดต">
+                                                <i class="fas fa-redo"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-success" id="subtotal-{{ item.product.id }}">
+                                        {# ใช้ฟังก์ชัน subtotal() ที่ถูกสร้างใน models.py #}
+                                        {{ item.subtotal|floatformat:2|intcomma }}
+                                    </span> 
+                                    <span class="text-success small">฿</span>
+                                </td>
+                                <td>
+                                    {# ลบสินค้าออกจากตะกร้า #}
+                                    <a href="{% url 'shop:remove_from_cart' item.id %}" class="btn btn-sm btn-outline-danger" title="ลบสินค้า">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {# สรุปยอดรวม #}
+            <div class="card modern-card p-4 border-0 shadow-lg summary-card">
+                <h5 class="fw-bold mb-3 text-primary-blue">สรุปยอดคำสั่งซื้อ</h5>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">จำนวนสินค้าทั้งหมด (ชิ้น):</span>
+                    {# ใช้ total_items ที่ถูกสร้างเป็น property ใน models.py #}
+                    <span class="fw-semibold">{{ cart.total_items|intcomma }}</span>
+                </div>
+                <div class="d-flex justify-content-between border-top pt-3 mt-3">
+                    <span class="fs-4 fw-bolder text-primary-blue">ยอดรวม:</span>
+                    {# ใช้ total_price ที่ถูกสร้างเป็น property ใน models.py #}
+                    <span class="fs-4 fw-bolder text-success">
+                        {{ cart.total_price|floatformat:2|intcomma }} ฿
+                    </span>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <a href="{% url 'shop:checkout' %}" class="btn btn-lg btn-primary-blue">
+                        ดำเนินการชำระเงิน <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+
+        {% else %}
+            {# กรณีตะกร้าว่าง #}
+            <div class="card modern-card p-5 text-center shadow-lg border-0">
+                <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
+                <h4 class="fw-bold text-primary-blue">ตะกร้าสินค้าว่างเปล่า</h4>
+                <p class="text-muted">ไม่มีสินค้า Art Toy ในตะกร้าของคุณเลย</p>
+                <a href="{% url 'shop:index' %}" class="btn btn-lg btn-primary-blue mt-3 mx-auto" style="max-width: 300px;">
+                    <i class="fas fa-gift me-2"></i> เลือกซื้อสินค้า
+                </a>
+            </div>
+        {% endif %}
+        
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+    /* -----------------------------------------------------
+        *** COLOR PALETTE: MODERN BLUE/AQUA/NAVY ***
+        ----------------------------------------------------- */
+    :root {
+        --primary-blue: #007bff; 
+        --dark-blue: #1a237e; 
+        --bg-light: #f0f8ff; 
+        --shadow-color: rgba(26, 35, 126, 0.1); 
+        --border-color: rgba(0, 105, 217, 0.05);
+    }
+    body { background-color: var(--bg-light); }
+    .text-primary-blue { color: var(--dark-blue) !important; }
+    .btn-primary-blue { 
+        background-color: var(--primary-blue); 
+        border-color: var(--primary-blue);
+        color: white;
+        border-radius: 8px; 
+        font-weight: bold; 
+        transition: background-color 0.2s;
+    }
+    .btn-primary-blue:hover { background-color: #0056b3; border-color: #0056b3; color: white; }
+    .btn-outline-primary-blue { color: var(--primary-blue); border-color: var(--primary-blue); }
+    .btn-outline-primary-blue:hover { background-color: var(--primary-blue); color: white; }
+
+    /* -----------------------------------------------------
+        *** Cart Specific Style ***
+        ----------------------------------------------------- */
+    .modern-card {
+        border-radius: 20px !important;
+        box-shadow: 0 10px 30px var(--shadow-color) !important;
+    }
+
+    .cart-product-img {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+        border-radius: 10px;
+        background-color: #f8f9fa;
+        border: 1px solid var(--border-color);
+    }
+
+    .cart-table thead th {
+        background-color: var(--border-color);
+        border: none;
+        font-weight: 600;
+    }
+
+    .quantity-control {
+        width: 150px;
+    }
+    .quantity-input {
+        border-radius: 0 !important;
+        border-left: 1px solid var(--border-color) !important;
+        border-right: 1px solid var(--border-color) !important;
+    }
+    .quantity-control .btn {
+        border-radius: 8px !important;
+    }
+    .quantity-control .btn:first-child {
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+    }
+    .quantity-control .btn:last-child {
+        border-top-left-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+    }
+
+    .summary-card {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+    }
+
+    .modern-card-alert {
+        border-radius: 15px;
+        font-weight: 500;
+        margin-bottom: 25px;
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const quantityInputs = document.querySelectorAll('.quantity-input');
+
+        quantityInputs.forEach(input => {
+            // เมื่อค่าใน input เปลี่ยน ให้ submit form อัตโนมัติ (หรือใช้ปุ่ม update)
+            // แต่เนื่องจากมีปุ่ม update อยู่แล้ว จึงใช้ submit เมื่อคลิกปุ่ม
+            // 💡 ถ้าต้องการอัปเดตแบบ AJAX ให้ใช้ fetch API ในไฟล์ views.py
+        });
+    });
+</script>
+{% endblock %}

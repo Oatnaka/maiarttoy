@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}ชำระเงิน - คำสั่งซื้อ #{{ order.id }}{% endblock %}
+
+{% block head_extra %}
+<style>
+    :root {
+        --primary-blue: #007bff; 
+        --dark-blue: #003366; 
+        --bg-light: #f0f8ff; 
+        --shadow-color: rgba(26, 35, 126, 0.1); 
+        --success-green: #28a745;
+        --warning-orange: #fd7e14;
+    }
+    
+    body { 
+        background-color: var(--bg-light); 
+    }
+    
+    .payment-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px var(--shadow-color);
+        border: 1px solid rgba(0, 105, 217, 0.05);
+    }
+    
+    .page-header {
+        background: linear-gradient(135deg, var(--dark-blue) 0%, var(--primary-blue) 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px 15px 0 0;
+        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+        text-align: center;
+    }
+    
+    .order-number {
+        background: rgba(255,255,255,0.2);
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+        display: inline-block;
+        margin-top: 0.5rem;
+    }
+    
+    .amount-section {
+        background: linear-gradient(135deg, var(--success-green) 0%, #20c997 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .amount-section .amount {
+        font-size: 3rem;
+        font-weight: 800;
+        margin: 0.5rem 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .payment-method-card {
+        background: #f8f9fa;
+        border: 2px solid var(--primary-blue);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s;
+    }
+    
+    .payment-method-card:hover {
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .qr-placeholder {
+        background: white;
+        border: 2px dashed #dee2e6;
+        border-radius: 15px;
+        padding: 3rem;
+        text-align: center;
+        margin: 1.5rem 0;
+    }
+    
+    .qr-placeholder i {
+        font-size: 5rem;
+        color: var(--primary-blue);
+        margin-bottom: 1rem;
+    }
+    
+    .btn-confirm-payment {
+        background: linear-gradient(135deg, var(--success-green) 0%, #20c997 100%);
+        border: none;
+        border-radius: 12px;
+        padding: 1.2rem 2rem;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: white;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-confirm-payment:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        color: white;
+    }
+    
+    .order-info {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--dark-blue);
+    }
+    
+    .status-badge {
+        background: var(--warning-orange);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .section-title {
+        color: var(--dark-blue);
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .instruction-box {
+        background: #fff3cd;
+        border-left: 4px solid var(--warning-orange);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .instruction-box ul {
+        margin: 0.5rem 0 0 0;
+        padding-left: 1.5rem;
+    }
+    
+    .instruction-box li {
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            
+            <div class="payment-card p-4 p-md-5">
+                
+                {# Page Header #}
+                <div class="page-header">
+                    <h3 class="mb-2">
+                        <i class="fas fa-credit-card me-2"></i>
+                        ชำระเงินคำสั่งซื้อ
+                    </h3>
+                    <div class="order-number">
+                        <i class="fas fa-receipt me-2"></i>
+                        คำสั่งซื้อ #{{ order.id }}
+                    </div>
+                    <div class="mt-3">
+                        <span class="status-badge">
+                            <i class="fas fa-clock me-1"></i>
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+
+                {# Amount to Pay #}
+                <div class="amount-section">
+                    <p class="mb-0 opacity-75">ยอดที่ต้องชำระ</p>
+                    <h1 class="amount">
+                        ฿{{ payment.amount_paid|floatformat:2|intcomma }}
+                    </h1>
+                    <p class="mb-0 opacity-75">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        ชำระเงินปลอดภัย 100%
+                    </p>
+                </div>
+
+                {# Order Summary #}
+                <div class="mb-4">
+                    <h5 class="section-title">
+                        <i class="fas fa-file-invoice"></i>
+                        รายละเอียดคำสั่งซื้อ
+                    </h5>
+                    <div class="order-info">
+                        {% for item in order.items.all %}
+                        <div class="info-row">
+                            <div>
+                                <strong>{{ item.product.name }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    ฿{{ item.price|floatformat:2|intcomma }} × {{ item.quantity }}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <strong>
+                                    ฿{{ item.subtotal|floatformat:2|intcomma }}
+                                </strong>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        <div class="info-row">
+                            <span>ยอดรวมทั้งหมด</span>
+                            <span>฿{{ order.total_amount|floatformat:2|intcomma }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {# Shipping Address #}
+                <div class="mb-4">
+                    <h5 class="section-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        ที่อยู่จัดส่ง
+                    </h5>
+                    <div class="order-info">
+                        <p class="mb-0" style="white-space: pre-line;">{{ order.shipping_address }}</p>
+                    </div>
+                </div>
+
+                {# Payment Instructions #}
+                <div class="instruction-box">
+                    <h6 class="fw-bold mb-2">
+                        <i class="fas fa-info-circle me-2"></i>
+                        วิธีการชำระเงิน
+                    </h6>
+                    <ul class="mb-0">
+                        <li>สแกน QR Code ด้านล่างเพื่อชำระเงิน</li>
+                        <li>หรือโอนเงินผ่านบัญชีธนาคาร (เลขบัญชี: 123-456-7890)</li>
+                        <li>หลังชำระเงินแล้ว กดปุ่ม "ยืนยันการชำระเงิน"</li>
+                        <li>ระบบจะตรวจสอบและยืนยันคำสั่งซื้อของคุณทันที</li>
+                    </ul>
+                </div>
+
+                {# Payment Method #}
+                <div class="mb-4">
+                    <h5 class="section-title">
+                        <i class="fas fa-qrcode"></i>
+                        ช่องทางการชำระเงิน
+                    </h5>
+                    
+                    <div class="payment-method-card">
+                        <div class="text-center mb-3">
+                            <h6 class="fw-bold text-primary">
+                                <i class="fas fa-mobile-alt me-2"></i>
+                                {{ payment.payment_method }}
+                            </h6>
+                        </div>
+                        
+                        {# QR Code Placeholder (ในโปรเจกต์จริงให้ใช้ QR Code จริง) #}
+                        <div class="qr-placeholder">
+                            <i class="fas fa-qrcode"></i>
+                            <p class="text-muted mb-0">QR Code สำหรับชำระเงิน</p>
+                            <small class="text-muted">
+                                (สแกนเพื่อชำระเงิน ฿{{ payment.amount_paid|floatformat:2|intcomma }})
+                            </small>
+                        </div>
+                        
+                        <div class="text-center text-muted small">
+                            <p class="mb-0">
+                                <i class="fas fa-university me-1"></i>
+                                รองรับทุกธนาคาร | PromptPay
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {# Confirm Payment Button #}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-confirm-payment">
+                            <i class="fas fa-check-circle me-2"></i>
+                            ยืนยันการชำระเงิน
+                        </button>
+                        <a href="{% url 'shop:my_orders' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            ดูคำสั่งซื้อของฉัน
+                        </a>
+                    </div>
+                </form>
+
+                {# Security Notice #}
+                <div class="text-center mt-4">
+                    <small class="text-muted">
+                        <i class="fas fa-lock me-1"></i>
+                        การชำระเงินของคุณได้รับการปกป้องด้วยระบบความปลอดภัยระดับสูง
+                    </small>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

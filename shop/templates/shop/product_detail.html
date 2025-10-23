@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ product.name }} - Art Toy Shop{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+<div class="row justify-content-center">
+    
+    {# *** คอลัมน์รูปภาพ *** #}
+    <div class="col-md-5 mb-4">
+        <div class="card modern-card p-4 border-0 shadow-lg"> 
+            {% if product.image %}
+                <img src="{{ product.image.url }}" class="img-fluid rounded product-detail-image" alt="{{ product.name }}">
+            {% else %}
+                {# 💡 ใช้ Placeholder Image จาก static #}
+                <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded" alt="No image" style="border: 1px solid var(--border-color);">
+            {% endif %}
+        </div>
+    </div>
+
+    {# *** คอลัมน์รายละเอียดสินค้าและฟอร์ม *** #}
+    <div class="col-md-5">
+        <div class="product-header mb-4">
+            <h1 class="fw-bold text-primary-blue">{{ product.name }}</h1>
+            <p class="text-muted">Art Toy Collection</p>
+        </div>
+
+        {# *** ส่วนราคา: ใช้สีแดงให้โดดเด่นตาม price-text style *** #}
+        <h3 class="mb-4 price-text fw-bolder">
+            {{ product.price|floatformat:2|intcomma }} ฿
+        </h3>
+
+        {# *** สถานะสต็อก *** #}
+        {% if product.is_in_stock %}
+            <div class="mb-4 text-success fw-bold"><i class="fas fa-check-circle me-2"></i> สินค้าพร้อมส่ง ({{ product.stock }} ชิ้น)</div>
+        {% else %}
+            <div class="mb-4 text-danger fw-bold"><i class="fas fa-times-circle me-2"></i> สินค้าหมดชั่วคราว</div>
+        {% endif %}
+
+        <hr class="my-4">
+
+        {# *** ฟอร์มเพิ่มสินค้าในตะกร้า *** #}
+        {% if product.is_in_stock %}
+            <form method="post" action="{% url 'shop:add_to_cart' product.id %}" class="mb-5">
+                {% csrf_token %}
+                <div class="d-flex align-items-center mb-4">
+                    <label for="id_quantity" class="form-label me-3 fw-semibold mb-0">จำนวน:</label>
+                    <input type="number" 
+                           name="quantity" 
+                           id="id_quantity" 
+                           value="1" 
+                           min="1" 
+                           max="{{ product.stock }}"
+                           class="form-control rounded-3" 
+                           style="width: 100px;" 
+                           required>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-lg btn-primary-blue">
+                        <i class="fas fa-cart-plus me-2"></i> เพิ่มลงในตะกร้า
+                    </button>
+                    {# Link ไปหน้าตะกร้า #}
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'shop:view_cart' %}" class="btn btn-lg btn-outline-primary-blue mt-2">
+                            <i class="fas fa-shopping-cart me-2"></i> ดูตะกร้าสินค้า
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        {% else %}
+            <button class="btn btn-lg btn-outline-danger w-100" disabled>สินค้าหมดชั่วคราว</button>
+        {% endif %}
+
+
+        {# *** ส่วนรายละเอียดสินค้าและแท็บ *** #}
+        <div class="mt-5">
+            <ul class="nav nav-tabs product-tabs mb-3" id="productTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active fw-bold" id="desc-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">คำอธิบาย</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="productTabContent">
+                <div class="tab-pane fade show active p-3 border rounded-3" id="description" role="tabpanel" aria-labelledby="desc-tab">
+                    <p>{{ product.description|linebreaksbr }}</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+    /* -----------------------------------------------------
+        *** COLOR PALETTE: MODERN BLUE/AQUA/NAVY ***
+        ----------------------------------------------------- */
+    :root {
+        --primary-blue: #0d6efd;    /* สีน้ำเงินมาตรฐาน Bootstrap */
+        --dark-blue: #1a237e;       /* Navy Blue */
+        --bg-light: #f5f8ff;        /* สีฟ้าอ่อนมาก */
+        --shadow-color: rgba(26, 35, 126, 0.1); 
+        --border-color: rgba(0, 105, 217, 0.05);
+        --price-red: #dc3545;       /* สีแดงสำหรับราคา */
+    }
+    body { background-color: var(--bg-light); }
+
+    /* -----------------------------------------------------
+        *** Global Card & Button Style ***
+        ----------------------------------------------------- */
+    .modern-card {
+        border-radius: 20px;
+        box-shadow: 0 10px 30px var(--shadow-color);
+        border: 1px solid var(--border-color);
+    }
+    .text-primary-blue { color: var(--dark-blue) !important; }
+    .price-text { color: var(--price-red); font-size: 2rem; font-weight: 700; }
+    .btn-primary-blue {
+        background-color: var(--primary-blue); 
+        color: white;
+        border-radius: 8px; 
+        font-weight: bold;
+        transition: background-color 0.2s;
+    }
+    .btn-primary-blue:hover { background-color: #0056b3; }
+    .btn-outline-primary-blue {
+        color: var(--primary-blue);
+        border-color: var(--primary-blue);
+        border-radius: 8px;
+        font-weight: bold;
+    }
+    .btn-outline-primary-blue:hover {
+        background-color: var(--primary-blue);
+        color: white;
+    }
+
+    /* -----------------------------------------------------
+        *** Product Detail Specific Style ***
+        ----------------------------------------------------- */
+    .product-detail-image {
+        max-height: 500px; /* จำกัดความสูงของรูปภาพ */
+        width: 100%;
+        object-fit: contain;
+    }
+    .product-tabs .nav-link {
+        color: var(--dark-blue); 
+        border: none;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+        padding: 10px 0;
+        margin-right: 20px;
+    }
+    .product-tabs .nav-link.active,
+    .product-tabs .nav-link:hover {
+        color: var(--primary-blue);
+        border-bottom-color: var(--primary-blue);
+        background-color: transparent;
+    }
+</style>
+{% endblock %}
